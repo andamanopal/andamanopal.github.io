@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EgoCatch: Prehensile Humanoid Catching from Egocentric Depth</title>
+  <meta name="description" content="A simulated bipedal humanoid catches and holds 512 held-out thrown objects using egocentric depth as its only object-specific sensing. IEEE-RAS Humanoids 2026.">
+  <meta property="og:title" content="EgoCatch: Prehensile Humanoid Catching of Diverse Thrown Objects from Egocentric Depth">
+  <meta property="og:description" content="A simulated humanoid catches and holds held-out thrown objects using only egocentric depth. IEEE-RAS Humanoids 2026.">
+  <meta property="og:image" content="https://andamanopal.github.io/egocatch/static/img/cinema.jpg">
+  <meta property="og:url" content="https://andamanopal.github.io/egocatch/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://andamanopal.github.io/egocatch/">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+</head>
+<body id="top">
+  <header class="cinema">
+    <video muted loop playsinline width="2560" height="1440" poster="static/img/cinema.jpg"
+           data-src="static/video/cinema.mp4" data-src-small="static/video/cinema_small.mp4"
+           aria-label="Side view of a simulated humanoid catching three thrown objects"></video>
+    <div class="cinema-text">
+      <h1>EgoCatch</h1>
+      <p class="subtitle">Prehensile Humanoid Catching of Diverse Thrown Objects from Egocentric Depth</p>
+      <p class="byline">Andaman Lekawat <span>IEEE-RAS Humanoids 2026</span></p>
+      <div class="cinema-links">
+        <a href="static/egocatch_humanoids2026.pdf">Paper</a>
+        <span class="cinema-soon" aria-disabled="true" title="Code release coming soon">Code (soon)</span>
+        <a href="#citation">BibTeX</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="local-nav" aria-label="Page sections">
+    <a class="wordmark" href="#top">EgoCatch</a>
+    <div class="nav-links">
+      <a href="#explore">One catch</a>
+      <a href="#bench">Each part</a>
+      <a href="#limits">Where it breaks</a>
+      <a href="#objects">Objects</a>
+      <a href="#reach">Outside training</a>
+      <a href="#citation">BibTeX</a>
+    </div>
+    <button type="button" class="pause" aria-pressed="false">Pause clips</button>
+    <a class="paper-link" href="static/egocatch_humanoids2026.pdf">Paper</a>
+  </nav>
+
+  <main>
+    <section class="intro" aria-label="Summary">
+      <p class="claim">A simulated humanoid catches thrown objects it has never seen and holds them in its fingers, with a
+        head-mounted depth camera as its only view of the object.</p>
+      <p class="lede">Everything is trained in NVIDIA Isaac Lab, on a Unitree G1 with two Inspire hands and 512 training
+        objects. First, reinforcement learning trains a privileged controller, which is told exactly how far each part of
+        its hands is from the object's surface and how quickly that gap is closing. That signal is then distilled into a
+        vision network that works it out from the robot's depth camera alone, and the network is fine-tuned on catching
+        itself while the controller stays frozen. On 512 objects it never saw in training, the robot catches about as well
+        this way as when the simulator gives it the exact answer.</p>
+    </section>
+  </main>
+
+  <figure class="bleed">
+    <video muted loop playsinline preload="none" width="1920" height="1080" poster="static/img/closeup.jpg"
+           data-src="static/video/closeup.mp4"
+           aria-label="Close view of the hands catching a mustard bottle and closing around it"></video>
+    <figcaption>Prehensile, not blocking: at least four finger links on the object for an uninterrupted 2.0 s.</figcaption>
+  </figure>
+
+  <main>
+    <section id="explore" aria-labelledby="explore-h">
+      <h2 id="explore-h">From depth to a hold</h2>
+      <div class="scrubber" id="scrubber">
+        <div class="choices" role="radiogroup" aria-label="Object">
+          <button type="button" role="radio" data-object="flashlight" aria-checked="true">Flashlight</button>
+          <button type="button" role="radio" data-object="shoe" aria-checked="false">Shoe</button>
+          <button type="button" role="radio" data-object="helmet" aria-checked="false">Helmet</button>
+          <button type="button" role="radio" data-object="saucer" aria-checked="false">Plant saucer</button>
+          <button type="button" role="radio" data-object="bowl" aria-checked="false">Bowl</button>
+        </div>
+        <div class="scrub-views">
+          <div class="scrub-see">
+            <figure>
+              <video class="pixelated" muted playsinline preload="auto" width="960" height="540" data-view="depth"
+                     aria-label="The policy's 90 by 160 depth input"></video>
+              <figcaption><strong>Depth</strong> The policy's input</figcaption>
+            </figure>
+            <figure>
+              <video muted playsinline preload="auto" width="848" height="480" data-view="ego"
+                     aria-label="Colour view from the same camera"></video>
+              <figcaption><strong>Colour</strong> Same camera, for viewers only</figcaption>
+            </figure>
+          </div>
+          <figure class="scrub-probes">
+            <div class="scrub-probe-stage">
+              <canvas aria-label="The robot, posed from the simulation, with its 22 hand probes and their predicted vectors to the closest object surface. Drag to rotate."></canvas>
+            </div>
+            <figcaption><strong>What the controller reads</strong> The robot and object as simulated, with 22 hand probes and their
+              vectors to the surface, predicted from depth. Orange is closing. Drag to turn.</figcaption>
+          </figure>
+          <figure class="scrub-robot">
+            <video muted playsinline preload="auto" width="960" height="720" data-view="front"
+                   aria-label="Third-person view of the catch"></video>
+            <figcaption><strong>Result</strong> <span data-out="phase">–</span></figcaption>
+          </figure>
+        </div>
+        <div class="scrub-timeline">
+          <button type="button" class="play" aria-label="Play">Play</button>
+          <div class="scrub-plot">
+            <canvas aria-hidden="true"></canvas>
+            <input type="range" min="0" max="319" value="0" step="1" aria-label="Time step">
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="bench" aria-labelledby="bench-h">
+      <h2 id="bench-h">What each part contributes</h2>
+      <p class="section-lead">Change one thing and watch the same throw.</p>
+      <div class="bench" data-condition="geometry" data-throw="0">
+        <div class="bench-stage">
+          <figure>
+            <div class="bench-media">
+              <video muted loop playsinline preload="none" data-side="base" width="1080" height="720"></video>
+              <span class="mark"></span>
+            </div>
+            <figcaption data-out="base-name"></figcaption>
+          </figure>
+          <figure>
+            <div class="bench-media">
+              <video muted loop playsinline preload="none" data-side="test" width="1080" height="720"></video>
+              <span class="mark"></span>
+            </div>
+            <figcaption data-out="test-name"></figcaption>
+          </figure>
+        </div>
+        <div class="bench-list"></div>
+        <div class="bench-under">
+          <p class="bench-note" aria-live="polite"></p>
+          <div class="choices" role="radiogroup" aria-label="Throw">
+            <button type="button" role="radio" data-throw="0" aria-checked="true">Throw 1</button>
+            <button type="button" role="radio" data-throw="1" aria-checked="false">Throw 2</button>
+            <button type="button" role="radio" data-throw="2" aria-checked="false">Throw 3</button>
+          </div>
+        </div>
+        <div class="bench-how" hidden>
+          <figure>
+            <video muted loop playsinline preload="none" width="848" height="480"
+                   aria-label="The depth this estimator works from"></video>
+            <figcaption><strong>What it works from</strong> <span data-out="how-input"></span></figcaption>
+          </figure>
+          <figure>
+            <div class="how-stage">
+              <canvas aria-label="The robot, posed from the simulation, with its 22 hand probes and the vectors this estimator produced. Drag to rotate."></canvas>
+            </div>
+            <figcaption><strong>What the controller gets</strong> <span data-out="how-channel"></span> Drag to turn.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits" aria-labelledby="limits-h">
+      <h2 id="limits-h">Where it breaks</h2>
+      <div class="chart-grid-3">
+        <figure class="chart" id="chart-size">
+          <h3>Small objects are the hardest to see</h3>
+          <p class="chart-sub">Catching from vision falls behind catching with the simulator's exact geometry on objects under
+            15 cm, and pulls ahead on large ones.</p>
+        </figure>
+        <figure class="chart" id="chart-freeze">
+          <h3>Vision matters most just before the catch</h3>
+          <p class="chart-sub">Freezing the robot's view for 0.16 s just before its hands reach the object stops most grasps
+            from forming; after contact, a freeze barely matters.</p>
+        </figure>
+        <figure class="chart" id="chart-failures">
+          <h3>Reaching works; holding on is the hard part</h3>
+          <p class="chart-sub">Nearly every failed throw ends with fingers on the object, and most of those never bring it
+            to rest.</p>
+        </figure>
+      </div>
+    </section>
+
+    <section id="objects" aria-labelledby="objects-h">
+      <h2 id="objects-h">The objects</h2>
+      <div class="catalog" id="catalog">
+        <div class="catalog-bar">
+          <div class="segmented" role="radiogroup" aria-label="Split">
+            <button type="button" role="radio" data-split="all" aria-checked="true">All 1,024</button>
+            <button type="button" role="radio" data-split="train" aria-checked="false"><i class="dot train"></i>Train-512</button>
+            <button type="button" role="radio" data-split="test" aria-checked="false"><i class="dot test"></i>Test-512</button>
+          </div>
+          <div class="menu">
+            <button type="button" class="menu-button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="menu-label">All repositories</span>
+            </button>
+            <ul class="menu-list" role="listbox" aria-label="Repository" hidden>
+              <li role="option" tabindex="-1" data-value="all" aria-selected="true"><span>All repositories</span><span class="menu-count"></span></li>
+              <li role="option" tabindex="-1" data-value="objaverse" aria-selected="false"><span>Objaverse</span><span class="menu-count"></span></li>
+              <li role="option" tabindex="-1" data-value="ycb" aria-selected="false"><span>YCB</span><span class="menu-count"></span></li>
+              <li role="option" tabindex="-1" data-value="gso" aria-selected="false"><span>Google Scanned Objects</span><span class="menu-count"></span></li>
+              <li role="option" tabindex="-1" data-value="dgn2" aria-selected="false"><span>DexGraspNet 2.0</span><span class="menu-count"></span></li>
+              <li role="option" tabindex="-1" data-value="abo" aria-selected="false"><span>Amazon Berkeley Objects</span><span class="menu-count"></span></li>
+            </ul>
+          </div>
+          <div class="search">
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75"/><path d="m13 13 4.5 4.5"/></svg>
+            <input type="search" placeholder="Search objects, e.g. mug" aria-label="Search objects">
+            <button type="button" class="search-clear" aria-label="Clear search" hidden></button>
+          </div>
+        </div>
+        <div class="catalog-body">
+          <div class="catalog-main">
+            <div class="catalog-tools">
+              <div class="choices" role="radiogroup" aria-label="View">
+                <button type="button" role="radio" data-view="map" aria-checked="true">Shape map</button>
+                <button type="button" role="radio" data-view="wall" aria-checked="false">All objects, smallest first</button>
+              </div>
+              <span class="catalog-count" aria-live="polite"></span>
+            </div>
+            <div class="map">
+              <canvas aria-label="Every object placed by its principal-dimension ratios. Grey dots are Train-512 and blue dots Test-512. The All objects view lists them for keyboard use."></canvas>
+              <div class="map-zoom">
+                <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+                <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+              </div>
+            </div>
+            <div class="wall" hidden></div>
+            <p class="catalog-none">No objects match. Clear the search or choose another repository.</p>
+          </div>
+          <aside class="inspector" aria-live="polite">
+            <div class="turntable placeholder atlas-sprite" role="img"></div>
+            <h3 data-out="name"></h3>
+            <dl>
+              <div><dt>Repository</dt><dd data-out="source"></dd></div>
+              <div><dt>Split</dt><dd data-out="split"></dd></div>
+              <div><dt>Size</dt><dd data-out="size"></dd></div>
+              <div class="row-neighbour"><dt>Closest training shape</dt><dd data-out="neighbour"></dd></div>
+              <div class="row-clips"><dt>Rendered throws</dt><dd data-out="clips"></dd></div>
+            </dl>
+          </aside>
+        </div>
+        <p class="catalog-sources"><span>Sources</span>
+          <a href="https://objaverse.allenai.org/">Objaverse</a>
+          <a href="https://www.ycbbenchmarks.com/">YCB</a>
+          <a href="https://arxiv.org/abs/2204.11918">Google Scanned Objects</a>
+          <a href="https://pku-epic.github.io/DexGraspNet2.0/">DexGraspNet 2.0</a>
+          <a href="https://amazon-berkeley-objects.s3.amazonaws.com/index.html">Amazon Berkeley Objects</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="reach" aria-labelledby="reach-h">
+      <h2 id="reach-h">Outside the training set</h2>
+      <figure class="media">
+        <video muted loop playsinline preload="none" width="2160" height="1272" poster="static/img/view_wall.jpg"
+               data-src="static/video/view_wall.mp4" data-src-small="static/video/view_wall_small.mp4"
+               aria-label="Grid of catches of different held-out objects, each above the colour view from the robot's camera"></video>
+        <figcaption>Selected catches of held-out objects. Under each: the colour view from the robot's camera.</figcaption>
+      </figure>
+
+      <div class="throws">
+        <h3>Throws farther or higher than any in training</h3>
+        <div class="throw-grid">
+          <figure>
+            <video muted loop playsinline preload="none" width="960" height="540" poster="static/img/shift_standard.jpg"
+                   data-src="static/video/shift_standard.mp4"
+                   aria-label="Side view of a standard throw, its path traced in blue, caught and held"></video>
+            <figcaption><strong>Standard <span>71.0%</span></strong> 1.4–2.3 m away, peaking at 1.35–1.50 m, as in training</figcaption>
+          </figure>
+          <figure>
+            <video muted loop playsinline preload="none" width="960" height="540" poster="static/img/shift_farther.jpg"
+                   data-src="static/video/shift_farther.mp4"
+                   aria-label="Side view of a farther, faster throw, its path traced in blue over the dashed standard path, caught and held"></video>
+            <figcaption><strong>Farther, faster <span>59.3%</span></strong> 2.5–3.0 m away, same peak height</figcaption>
+          </figure>
+          <figure>
+            <video muted loop playsinline preload="none" width="960" height="540" poster="static/img/shift_higharc.jpg"
+                   data-src="static/video/shift_higharc.mp4"
+                   aria-label="Side view of a high-arc throw, its path traced in blue over the dashed standard path, caught and held"></video>
+            <figcaption><strong>High arc <span>45.1%</span></strong> Peaking at 1.65–1.90 m, standard distance</figcaption>
+          </figure>
+        </div>
+        <p class="fine">Success over the 512 test objects. The dashed line is the standard throw's path.</p>
+      </div>
+    </section>
+
+    <section id="citation" aria-labelledby="cite-h">
+      <h2 id="cite-h">Citation</h2>
+      <div class="bibtex">
+        <button type="button" class="copy" data-copy="bibtex">Copy</button>
+        <pre id="bibtex"><code>@inproceedings{lekawat2026egocatch,
+  title     = {{EgoCatch}: Prehensile Humanoid Catching of Diverse Thrown
+               Objects from Egocentric Depth},
+  author    = {Lekawat, Andaman},
+  booktitle = {2026 IEEE-RAS 25th International Conference on Humanoid
+               Robots (Humanoids)},
+  year      = {2026}
+}</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="trial-dialog" aria-label="One rendered throw">
+    <video controls playsinline width="1080" height="720"></video>
+    <div class="trial-dialog-bar">
+      <p data-out="trial"></p>
+      <button type="button" class="close">Close</button>
+    </div>
+  </dialog>
+
+  <script src="static/js/main.js" defer></script>
+  <script type="module" src="static/js/scrubber.js"></script>
+  <script type="module" src="static/js/bench.js"></script>
+  <script src="static/js/charts.js" defer></script>
+  <script src="static/js/catalog.js" defer></script>
+</body>
+</html>
