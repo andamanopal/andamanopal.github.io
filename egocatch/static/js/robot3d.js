@@ -72,10 +72,16 @@ export async function fetchPose(url) {
 export class RobotView {
   constructor(canvas) {
     this.canvas = canvas;
+    // available is false without WebGL; the page then shows a recording of this view instead
+    // (tools/render_probe_views.py), and this object only absorbs calls.
+    // A throwaway canvas asks first, so a browser without WebGL never reaches three.js, which would log errors.
+    const probe = document.createElement("canvas");
+    this.available = Boolean(probe.getContext("webgl2") || probe.getContext("webgl"));
     try {
+      if (!this.available) throw new Error("WebGL unavailable");
       this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     } catch {
-      // Without WebGL the panel stays blank and the clips and timeline still work.
+      this.available = false;
       this.draw = () => {};
       this.setRecord = () => {};
       this.ready = Promise.resolve();

@@ -256,6 +256,12 @@ h3 { margin: 0 0 0.4rem; font-size: 1.0625rem; font-weight: 600; line-height: 1.
 .how-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; background: #0f1114; border: 1px solid var(--rule); }
 .how-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
 .how-stage canvas:active { cursor: grabbing; }
+
+/* Without WebGL a recording of the 3D view stands in for it, and the caption trades its drag hint for a note. */
+.probe-recording { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0f1114; }
+.webgl-note { display: none; }
+.no-webgl .drag-hint { display: none; }
+.no-webgl .webgl-note { display: inline; }
 .bench-how figcaption { margin-top: 0.4rem; font-size: 0.8125rem; line-height: 1.4; }
 .bench-how figcaption strong { display: block; color: var(--ink); font-weight: 600; }
 

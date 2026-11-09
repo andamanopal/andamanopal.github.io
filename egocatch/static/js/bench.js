@@ -34,6 +34,13 @@ import { RobotView, fetchPose } from "./robot3d.js";
   const howInput = how.querySelector('[data-out="how-input"]');
   const howChannel = how.querySelector('[data-out="how-channel"]');
   const howRobot = new RobotView(howCanvas);
+  // Without WebGL, a recording of the same view plays in its place on the clips' clock, and the caption says why.
+  let howRecording = null;
+  if (!howRobot.available) {
+    howRecording = Object.assign(document.createElement("video"), { muted: true, playsInline: true, loop: true, preload: "auto", className: "probe-recording" });
+    howCanvas.closest("figure").classList.add("no-webgl");
+    howCanvas.replaceWith(howRecording);
+  }
   let howLength = 0;
   let outcomeAt = [0, 0];  // the simulation step each clip's outcome is decided, from bench.json
   const conditions = {};
@@ -101,15 +108,21 @@ import { RobotView, fetchPose } from "./robot3d.js";
     how.hidden = !row.input;
     howLength = 0;
     if (!row.input) {
-      howVideo.removeAttribute("src");
-      howVideo.load();
+      for (const video of [howVideo, howRecording].filter(Boolean)) {
+        video.removeAttribute("src");
+        video.load();
+      }
       return;
     }
     howInput.textContent = row.input;
     howChannel.textContent = row.channel;
     howVideo.poster = `static/img/bench/how_${pair.test}.jpg`;
     howVideo.src = `static/video/bench/how_${pair.test}.mp4`;
-    if (visible && !window.egocatchPaused) howVideo.play().catch(() => {});
+    if (howRecording) howRecording.src = `static/video/bench/how3d_${pair.test}.mp4`;
+    if (visible && !window.egocatchPaused) {
+      howVideo.play().catch(() => {});
+      howRecording?.play().catch(() => {});
+    }
     const name = pair.test;
     const [data, pose] = await Promise.all([
       fetch(`static/bench/${name}.json`).then((r) => r.json()),
@@ -166,7 +179,9 @@ import { RobotView, fetchPose } from "./robot3d.js";
   // Both clips share one length, so keeping the second on the first's clock keeps them on the same throw moment.
   testVideo.addEventListener("timeupdate", () => {
     if (Math.abs(testVideo.currentTime - baseVideo.currentTime) > 0.1) testVideo.currentTime = baseVideo.currentTime;
-    if (!how.hidden && Math.abs(howVideo.currentTime - baseVideo.currentTime) > 0.1) howVideo.currentTime = baseVideo.currentTime;
+    for (const video of [howVideo, howRecording].filter(Boolean)) {
+      if (!how.hidden && Math.abs(video.currentTime - baseVideo.currentTime) > 0.1) video.currentTime = baseVideo.currentTime;
+    }
   });
 
   new IntersectionObserver(([entry]) => {
@@ -175,11 +190,15 @@ import { RobotView, fetchPose } from "./robot3d.js";
     if (visible && !window.egocatchPaused) {
       baseVideo.play().catch(() => {});
       testVideo.play().catch(() => {});
-      if (!how.hidden) howVideo.play().catch(() => {});
+      if (!how.hidden) {
+        howVideo.play().catch(() => {});
+        howRecording?.play().catch(() => {});
+      }
     } else if (!visible) {
       baseVideo.pause();
       testVideo.pause();
       howVideo.pause();
+      howRecording?.pause();
     }
   }, { rootMargin: "200px 0px" }).observe(root.querySelector(".bench-stage"));
 

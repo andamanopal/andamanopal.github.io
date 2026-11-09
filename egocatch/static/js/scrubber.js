@@ -6,7 +6,7 @@ import { RobotView, fetchPose } from "./robot3d.js";
   const root = document.getElementById("scrubber");
   if (!root) return;
 
-  const videos = root.querySelectorAll("video[data-view]");
+  const videos = [...root.querySelectorAll("video[data-view]")];
   const slider = root.querySelector("input[type=range]");
   const playButton = root.querySelector(".play");
   const plot = root.querySelector(".scrub-plot");
@@ -18,6 +18,14 @@ import { RobotView, fetchPose } from "./robot3d.js";
   let data = null;
   let current = 0;
   const robot = new RobotView(probeCanvas);
+  // Without WebGL, a recording of the same view joins the clips the timeline drives, and the caption says why.
+  if (!robot.available) {
+    const recording = Object.assign(document.createElement("video"), { muted: true, playsInline: true, preload: "auto", className: "probe-recording" });
+    recording.dataset.view = "probes";
+    probeCanvas.closest("figure").classList.add("no-webgl");
+    probeCanvas.replaceWith(recording);
+    videos.push(recording);
+  }
 
   const css = (name) => getComputedStyle(root).getPropertyValue(name).trim();
 
